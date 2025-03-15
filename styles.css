@@ -1,0 +1,79 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;  
+}
+
+.container {
+    width: 330px;
+    padding: 28px;
+    background-color: white;
+    margin: auto;    
+    border: px solid black;
+    border-radius: 9px;
+    font-size: 22px
+}
+
+input[type=datetime-local] {
+    width: 85%;
+    margin-bottom: 1px;
+    padding: 1px 1px;
+    display: inline-block;
+    border: px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+button {
+    background-color: #04AA6D;
+    color: white;
+    padding: 5px 1px;
+    margin: 1px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 30%;
+}
+
+button:hover {
+    opacity: 0.8;
+}
+div{  
+    line-height: 1.1;
+}
+
+button:hover {
+    opacity: 0.8;
+}
+h1{
+font-size: 18px
+  }
+h2{
+font-size: 18px
+ }
+
+p{ 
+font-size: px
+  }
+label
+{ 
+font-size:13px
+  }
+input[type=number]{
+    width: 65%;
+    margin-bottom: 3px;
+    padding: 1px 1px;
+    display: inline-block;
+    border: px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+input::-webkit-input-placeholder {  
+  color: ;  
+}  
+p1
+{ 
+font-size:11px;
+color: red;
+  }
