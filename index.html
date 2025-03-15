@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="GKB">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>线效率APP</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>酒机关机时间预测</h1>  
+  <form id="inputForm">  
+    <div>  
+      <label for="startTime">酒机开机时间(点击设置时间):</label>  
+      <input type="datetime-local" id="startTime" name="startTime" required>  
+    </div>  
+    <div>  
+      <label for="ratedCapacity">额 定能力1:</label>  
+      <input type="number" id="ratedCapacity" name="ratedCapacity"placeholder="输入24000至90000"min="24000"max="90000" required> 
+      <br>
+      <label for="bottleType">瓶型/罐型1:</label>  
+      <input type="number" id="bottleType" name="bottleType"min="250"max="580"placeholder="输入瓶/罐型，250至580" required>
+      <br>
+      <label for="productionTons">预 计产量1:</label>  
+      <input type="number" id="productionTons" name="productionTons"placeholder="输入产量，单位吨" required> 
+      <br>
+      <label for="ratedCapacity2">额 定能力2:</label>  
+      <input type="number" id="ratedCapacity2" name="ratedCapacity2"placeholder="输入24000至90000"min="24000"max="90000"required>  
+      <br>
+      <label for="bottleType2">瓶型/罐型2:</label>  
+      <input type="number" id="bottleType2" name="bottleType2"placeholder="输入瓶/罐型，250至580"min="250"max="580" required> <br>
+      <label for="productionTons2">预 计产量2:</label>  
+      <input type="number" id="productionTons2" name="productionTons2"placeholder="输入产量，单位吨，如没有请填0" required> 
+    <br>
+    </div> 
+    <div>  
+      <label for="efficiency">设 备 效 率:</label>  
+      <input type="number" id="efficiency" name="efficiency"step="0.01" min="0"max="100"placeholder="输入预测效率0至100"required>  
+    </div>  
+    <div>  
+      <label for="fixedLoss">酒损（%）:</label>  
+      <input type="number" id="fixedLoss" name="fixedLoss" step="0.01" min="0" max="100" placeholder="输入预计酒损0至100"required>  
+    </div>  
+    <button type="submit">计算关机时间</button>  
+  </form>  
+  <div id="output">   
+    <p id="shutdownTime"></p>  
+        <hr>
+        <h2>实时线效率计算</h2>
+        <p1>tips：若测算单品种，则灌装数量2填0，且让改型时间等于关机时间</p1> 
+        <form id="device-efficiency-calculator">
+            <label for="start-time">酒机开机时间(点击设置时间):</label>
+            <input type="datetime-local" id="start-time" name="start-time" required>
+            <br>
+			<label for="gx-time">改型停机时间(点击设置时间):</label>
+			<input type="datetime-local" id="gx-time" name="gx-time" required>
+			<br>
+            <label for="end-time">酒机关机时间(点击设置时间):</label>
+            <input type="datetime-local" id="end-time" name="end-time" required>
+            <br>
+            <label for="capacity1">额定能力1:</label>
+            <input type="number" id="capacity1" name="capacity1"min="24000"max="90000"placeholder="输入24000至90000"required>
+            <br>
+            <label for="output1">灌装数量1:</label>
+            <input type="number" id="output1" name="output1" placeholder="输入酒机罐装数"required>
+            <br>
+            <label for="capacity2">额定能力2:</label>
+            <input type="number" id="capacity2" name="capacity2"min="24000"max="90000" placeholder="输入24000至90000"required>
+            <br>
+            <label for="output2">灌装数量2:</label>
+            <input type="number" id="output2" name="output2"placeholder="输入酒机罐装数" required>
+            <br>
+            <button type="submit">计算线效率</button>
+        </form>
+        <p id="efficiency-result"></p>
+    </div>
+    <script src="app.js"></script>
+</div>
+</body>  
+</html>
