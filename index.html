@@ -4,11 +4,11 @@
     <meta charset="GKB">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>线效率测算--LeeHoo</title>
-    <link rel="stylesheet" href="/lee19/styles.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>酒机关机时间预测</h1>  
+        <h1>    </h1>  
   <form id="inputForm">  
     <div>  
       <label for="startTime">酒机开机时间(点击设置时间):</label>  
@@ -74,7 +74,92 @@
         </form>
         <p id="efficiency-result"></p>
     </div>
-    <script src="/lee19/app.js"></script>
+    <script src="app.js"></script>
 </div>
+    <div class="container">
+        <h3>灌装数据记录</h3>
+        <form id="sjjl" onsubmit="return false">
+            <select id="capacity">
+                <option value="270">270</option>
+                <option value="330">330</option>
+                <option value="500">500</option>
+                <option value="580">580</option>
+            </select>
+            <input type="number" id="value" required placeholder="输入数值">
+            <button onclick="addRecord()">添加</button>
+        </form>
+        <div class="summary-container" id="summaries"></div>
+        <div id="records"></div>
+    </div>
+
+    <script>
+        // 从本地存储加载记录
+        let records = JSON.parse(localStorage.getItem('filling-records')) || [];
+
+        // 初始化时渲染数据
+        renderRecords();
+        renderSummaries();
+
+        function getCurrentTime() {
+            const d = new Date();
+            return `${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('filling-records', JSON.stringify(records));
+        }
+
+        function addRecord() {
+            const type = document.getElementById('capacity').value;
+            const value = document.getElementById('value').value;
+            if (!value) return;
+
+            records.unshift({
+                time: getCurrentTime(),
+                type,
+                value: parseInt(value)
+            });
+
+            document.getElementById('value').value = '';
+            saveToLocalStorage();
+            renderRecords();
+            renderSummaries();
+        }
+
+        function deleteRecord(index) {
+            records.splice(index, 1);
+            saveToLocalStorage();
+            renderRecords();
+            renderSummaries();
+        }
+
+        function renderRecords() {
+            const container = document.getElementById('records');
+            container.innerHTML = records.map((record, index) => `
+                <div class="record-item">
+                    <div>
+                        <strong>${index + 1}.</strong>
+                        ${record.time} -- ${record.type} -- ${record.value}
+                    </div>
+                    <button class="del-btn" onclick="deleteRecord(${index})">删除</button>
+                </div>
+            `).join('');
+        }
+
+        function renderSummaries() {
+            const summary = records.reduce((acc, record) => {
+                acc[record.type] = (acc[record.type] || 0) + record.value;
+                return acc;
+            }, {});
+
+            const container = document.getElementById('summaries');
+            container.innerHTML = `
+                <h4>分瓶（罐）型求和：</h4>
+                ${Object.entries(summary).map(([type, sum]) => `
+                    <div class="summary-item">${type} 求和：${sum}</div>
+                `).join('')}
+            `;
+        }
+    </script>
 </body>  
 </html>
