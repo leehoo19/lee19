@@ -47,16 +47,17 @@ button:hover {
     opacity: 0.8;
 }
 h1{
-font-size: 18px
+font-size: 18px;
   }
 h2{
-font-size: 18px
+font-size: 18px;
  }
 h3{
-font-size: 18px
+font-size: 18px;
  }
 h4{
 font-size: 18px
+color:red;
  }
 p{ 
 font-size: px
@@ -66,7 +67,7 @@ label
 font-size:13px
   }
 input[type=number]{
-    width: 65%;
+    width: 64%;
     margin-bottom: 3px;
     padding: 1px 1px;
     display: inline-block;
@@ -82,3 +83,31 @@ p1
 font-size:11px;
 color: red;
   }
+  #capacity1 {
+    width: 64%;
+  }
+.summary-item {
+  color: #ff0000;  /* 整体文字红色 */
+}
+.summary-item .value {
+  font-weight: bold;  /* 仅加粗数值 */
+}
+.summary-item {
+  border: 1px solid #ff0000;  /* 红色边框 */
+  padding: 6px 10px;
+  margin: 5px 0;
+  border-radius: 4px;
+  display: inline-block;
+}
+#value {
+    width: 59%;
+  }
+hr {
+  border: 0;
+  height: 5px;                    /* 加粗线条 */
+  background: linear-gradient(90deg, #ff6b6b, #4ecdc4); /* 渐变效果 */
+  border-radius: 2px;             /* 圆角端点 */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* 投影效果 */
+  max-width: 100%;                /* 限制最大宽度 */
+  margin: 30px auto;             /* 居中效果 */
+}
