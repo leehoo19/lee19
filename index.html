@@ -1,162 +1,243 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-    <meta charset="GKB">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>线效率测算--LeeHoo</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* 确保整个页面占满视口，使用flex列布局 */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background-color: #f5f5f5;
+        }
+        /* 内容区域占满剩余空间，溢出滚动 */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            padding-bottom: 10px; /* 为底部导航留出空间 */
+        }
+        /* 底部导航栏样式 */
+        .bottom-nav {
+            display: flex;
+            border-top: 1px solid #ddd;
+            background-color: white;
+            height: 60px;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+        }
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            font-size: 12px;
+            cursor: pointer;
+            transition: color 0.2s;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .nav-item.active {
+            color: #007aff;
+            font-weight: 500;
+        }
+        .nav-item i {
+            font-size: 24px;
+            margin-bottom: 2px;
+        }
+        .nav-item .icon-calc::before { content: "📊"; font-size: 22px; }
+        .nav-item .icon-monitor::before { content: "📡"; font-size: 22px; }
+
+        .monitor-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+        }
+        /* 隐藏页面 */
+        .page-hidden {
+            display: none;
+        }
+        /* 原有容器内边距微调，适配移动端 */
+        .time-input-group {
+            flex-wrap: wrap;
+        }
+        .segment {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            background-color: #007aff;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px 0;
+        }
+        button#add-segment {
+            background-color: #34c759;
+        }
+        .del-btn {
+            background-color: #ff3b30;
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        .summary-container, #records {
+            margin-top: 15px;
+        }
+        .record-item {
+            background: white;
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
 </head>
 <body>
-<div class="container">
-	<hr>
-        <h1>关机时间预测</h1>
-        <form id="inputForm">  
-          <div>  
-            <label for="startTime">酒机开机时间(点击设置时间):</label>  
-            <input type="datetime-local" id="startTime" name="startTime" required>  
-          </div>  
-          <div>  
-            <label for="ratedCapacity">额定能力 1:</label>  
-            <input type="number" id="ratedCapacity" name="ratedCapacity"placeholder="输入10000至150000"min="10000"max="150000" required> 
-            <br>
-            <label for="bottleType">瓶型/罐型1:</label>  
-            <input type="number" id="bottleType" name="bottleType"min="200"max="580"placeholder="输入瓶/罐型，200至580" required>
-            <br>
-            <label for="productionTons">预计产量 1:</label>  
-            <input type="number" id="productionTons" name="productionTons"placeholder="输入产量，单位吨" required> 
-            <br>
-            <label for="ratedCapacity2">额定能力 2:</label>  
-            <input type="number" id="ratedCapacity2" name="ratedCapacity2"placeholder="输入10000至150000"min="10000"max="150000"required>  
-            <br>
-            <label for="bottleType2">瓶型/罐型2:</label>  
-            <input type="number" id="bottleType2" name="bottleType2"placeholder="输入瓶/罐型，200至580"min="200"max="580" required> <br>
-            <label for="productionTons2">预计产量 2:</label>  
-            <input type="number" id="productionTons2" name="productionTons2"placeholder="输入产量，单位吨，如没有请填0" required> 
-          <br>
-          </div> 
-          <div>  
-            <label for="efficiency">设 备 效 率:</label>  
-            <input type="number" id="efficiency" name="efficiency"step="0.01" min="0"max="100"placeholder="输入预测效率0至100"required>  
-          </div>  
-          <div>  
-            <label for="fixedLoss">酒损（%）:</label>  
-            <input type="number" id="fixedLoss" name="fixedLoss" step="0.01" min="0" max="100" placeholder="输入预计酒损0至100"required>  
-          </div>  
-          <button type="submit">关机时间</button>  
-        </form>   
-  <div id="output">
-    <p id="shutdownTime"></p>  
-        <hr>
-        <h2>实时线效计算</h2>
-        <p1>tips：若测算单品种，则灌装数量2填0，且让改型时间等于关机时间</p1> 
-        <form id="device-efficiency-calculator">
-            <label for="start-time">酒机开机时间(点击设置时间):</label>
-            <input type="datetime-local" id="start-time" name="start-time" required>
-            <br>
-  			<label for="gx-time">改型停机时间(点击设置时间):</label>
-  			<input type="datetime-local" id="gx-time" name="gx-time" required>
-  			<br>
-            <label for="end-time">酒机关机时间(点击设置时间):</label>
-            <input type="datetime-local" id="end-time" name="end-time" required>
-            <br>
-            <label for="capacity1">额定能力1:</label>
-            <input type="number" id="capacity1" name="capacity1"min="10000"max="150000"placeholder="输入10000至150000"required>
-            <br>
-            <label for="output1">灌装数量1:</label>
-            <input type="number" id="output1" name="output1" placeholder="输入酒机罐装数"required>
-            <br>
-            <label for="capacity2">额定能力2:</label>
-            <input type="number" id="capacity2" name="capacity2"min="10000"max="150000" placeholder="输入10000至150000"required>
-            <br>
-            <label for="output2">灌装数量2:</label>
-            <input type="number" id="output2" name="output2"placeholder="输入酒机罐装数" required>
-            <br>
-            <button type="submit">计算线效</button>
-        </form>
-        <p id="efficiency-result"></p>
-    </div>
-    <script src="app.js"></script>
-		<hr>
-        <h3>灌装数据记录</h3>
-        <form id="sjjl" onsubmit="return false">
-            <select id="capacity">
-                            <option value="270/330">270/330</option>
-                            <option value="500">500</option>
-							<option value="卡纸">卡纸</option>
-                        </select>
-            <input type="number" id="value" required placeholder="输入酒机灌装数">
-            <button onclick="addRecord()">添加记录</button>
-        </form>
-        <div class="summary-container" id="summaries"></div>
-        <div id="records"></div>
-    <script>
-        // 从本地存储加载记录
-        let records = JSON.parse(localStorage.getItem('filling-records')) || [];
-
-        // 初始化时渲染数据
-        renderRecords();
-        renderSummaries();
-
-        function getCurrentTime() {
-            const d = new Date();
-            return `${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
-        }
-
-        function saveToLocalStorage() {
-            localStorage.setItem('filling-records', JSON.stringify(records));
-        }
-
-        function addRecord() {
-            const type = document.getElementById('capacity').value;
-            const value = document.getElementById('value').value;
-            if (!value) return;
-
-            records.unshift({
-                time: getCurrentTime(),
-                type,
-                value: parseInt(value)
-            });
-
-            document.getElementById('value').value = '';
-            saveToLocalStorage();
-            renderRecords();
-            renderSummaries();
-        }
-
-        function deleteRecord(index) {
-            records.splice(index, 1);
-            saveToLocalStorage();
-            renderRecords();
-            renderSummaries();
-        }
-
-        function renderRecords() {
-            const container = document.getElementById('records');
-            container.innerHTML = records.map((record, index) => `
-                <div class="record-item">
-                    <div>
-                        <strong>${index + 1}.</strong>
-                        ${record.time}-${record.type}-${record.value}
-                    </div>
-                    <button class="del-btn" onclick="deleteRecord(${index})">删除记录</button>
+<div class="app-container">
+    <!-- 内容区域，动态显示当前页面 -->
+    <div class="content" id="content-area">
+        <!-- 页面1：实时效率测算（默认显示） -->
+        <div id="page-calc">
+            <hr>
+            <h2>实时线效计算</h2>
+            <p style="font-size: 14px; color: #555;">每轮可单独设置剔除时间，若涉及前后工序均有剔除补偿时间则填总时间（分钟）。</p>
+            <form id="device-efficiency-calculator">
+                <!-- 开机时间：组合输入 -->
+                <div class="time-input-group">
+                    <label>酒机开机时间:</label>
+                    <input type="date" id="start-date" required>
+                    <input type="number" id="start-hour" min="0" max="23" value=" " placeholder="时" required>
+                    <input type="number" id="start-minute" min="0" max="59" value=" " placeholder="分" required>
+                    <input type="number" id="start-second" min="0" max="59" value="0" placeholder="秒" required>
                 </div>
-            `).join('');
+
+                <!-- 动态改型段容器 -->
+                <div id="segments-container"></div>
+                <button type="button" id="add-segment">+ 添加改型轮次</button>
+
+                <!-- 关机时间：组合输入 -->
+                <div class="time-input-group">
+                    <label>酒机关机时间:</label>
+                    <input type="date" id="end-date" required>
+                    <input type="number" id="end-hour" min="0" max="23" value=" " placeholder="时" required>
+                    <input type="number" id="end-minute" min="0" max="59" value=" " placeholder="分" required>
+                    <input type="number" id="end-second" min="0" max="59" value="0" placeholder="秒" required>
+                </div>
+
+                <!-- 最后一段参数 -->
+                <div id="last-segment">
+                    <label>最后一轮额定能力:</label>
+                    <select id="last-capacity" required>
+                        <option value="24000">24000</option>
+                        <option value="36000">36000</option>
+                        <option value="72000">72000</option>
+                        <option value="60000">60000</option>
+                        <option value="90000">90000</option>
+                    </select>
+                    <label>最后段灌装数量:</label>
+                    <input type="number" id="last-output" placeholder="灌装数量" required>
+                    <label>最后段剔除时间(分钟):</label>
+                    <input type="number" id="last-exclude" value="0" min="0" step="0.1" placeholder="剔除分钟" required>
+                    <label>剩余可灌装数量:</label>
+                    <input type="number" id="remaining-output" value="0" min="0" placeholder="剩余可灌装数" required>
+                </div>
+
+                <button type="submit">计算线效</button>
+            </form>
+            <p id="efficiency-result"></p>
+
+            <hr>
+            <h3>灌装数据记录</h3>
+            <form id="sjjl" onsubmit="return false">
+                <select id="capacity">
+                    <option value="270/330">270/330</option>
+                    <option value="500">500</option>
+                    <option value="卡纸">卡纸</option>
+                    <!-- 新增选项 -->
+                    <option value="第一轮总数">第一轮总数</option>
+                    <option value="第二轮总数">第二轮总数</option>
+                    <option value="第三轮总数">第三轮总数</option>
+                    <option value="第四轮总数">第四轮总数</option>
+                </select>
+                <input type="number" id="value" required placeholder="输入灌装数">
+                <button onclick="addRecord()">添加记录</button>
+            </form>
+            <div class="summary-container" id="summaries"></div>
+            <div id="records"></div>
+            <hr>
+        </div>
+
+        <!-- 页面2：实时效率监控 -->
+        <div id="page-monitor" style="height: 100%; display: none;">
+            <iframe class="monitor-frame" src="https://ty65nc782008.vicp.fun" title="包装效率监控"></iframe>
+        </div>
+    </div>
+
+    <!-- 底部导航栏 -->
+    <div class="bottom-nav">
+        <div class="nav-item active" id="nav-calc">
+            <span class="icon-calc"></span>
+            <span>实时效率测算</span>
+        </div>
+        <div class="nav-item" id="nav-monitor">
+            <span class="icon-monitor"></span>
+            <span>实时效率监控</span>
+        </div>
+    </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+    // 底部导航切换逻辑
+    (function() {
+        const navCalc = document.getElementById('nav-calc');
+        const navMonitor = document.getElementById('nav-monitor');
+        const pageCalc = document.getElementById('page-calc');
+        const pageMonitor = document.getElementById('page-monitor');
+
+        function setActivePage(page) {
+            // 更新导航激活状态
+            navCalc.classList.toggle('active', page === 'calc');
+            navMonitor.classList.toggle('active', page === 'monitor');
+
+            // 显示对应页面
+            if (page === 'calc') {
+                pageCalc.style.display = 'block';
+                pageMonitor.style.display = 'none';
+            } else {
+                pageCalc.style.display = 'none';
+                pageMonitor.style.display = 'block';
+            }
         }
 
-        function renderSummaries() {
-            const summary = records.reduce((acc, record) => {
-                acc[record.type] = (acc[record.type] || 0) + record.value;
-                return acc;
-            }, {});
+        navCalc.addEventListener('click', function() {
+            setActivePage('calc');
+        });
 
-            const container = document.getElementById('summaries');
-            container.innerHTML = `
-                ${Object.entries(summary).map(([type, sum]) => `
-                    <div class="summary-item">${type}自动求和：${sum}</div>
-                `).join('')}
-            `;
-        }
-    </script>
-	<hr>
-</body>  
+        navMonitor.addEventListener('click', function() {
+            setActivePage('monitor');
+        });
+
+        // 默认显示测算页（已在HTML中设置）
+    })();
+</script>
+</body>
 </html>
