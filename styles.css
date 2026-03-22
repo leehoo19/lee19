@@ -1,113 +1,293 @@
+/* 全局盒模型重置，避免内边距/边框撑大元素 */
+* {
+    box-sizing: border-box;
+}
+
 body {
     font-family: Arial, sans-serif;
     background-color: #f0f0f0;
     margin: 0;
-    padding: 0;  
+    padding: 0;
 }
 
+/* 容器：极致紧凑，充分利用屏幕高度 */
 .container {
-    width: 330px;
-    padding: 28px;
+    width: 100%;
+    max-width: 600px;          /* 保持最大宽度，大屏不松散 */
+    padding: 10px;              /* 进一步压缩内边距 */
     background-color: white;
-    margin: auto;    
-    border: px solid black;
-    border-radius: 9px;
-    font-size: 22px
+    margin: 0 auto;
+    border: 1px solid black;
+    border-radius: 8px;
+    font-size: 14px;            /* 基础字体调小，节省垂直空间 */
 }
 
-input[type=datetime-local] {
-    width: 85%;
-    margin-bottom: 1px;
-    padding: 1px 1px;
-    display: inline-block;
-    border: px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box;
+/* 针对超小屏进一步压缩 */
+@media (max-width: 480px) {
+    .container {
+        padding: 8px;
+        font-size: 13px;
+    }
 }
 
+/* 标题极小化 */
+h2, h3 {
+    font-size: 1.1rem;          /* 约15px */
+    margin: 0.4rem 0 0.2rem;    /* 上下边距大幅缩减 */
+}
+
+/* 提示文字缩小 */
+p1 {
+    font-size: 0.7rem;          /* 约10px */
+    color: red;
+    margin: 2px 0;
+}
+
+/* 标签通用 */
+label {
+    font-size: 0.8rem;          /* 约11-12px */
+    line-height: 1.2;
+}
+
+/* 日期、下拉框、数字输入框统一紧凑 */
+input[type=date], select, input[type=number] {
+    padding: 4px 6px;           /* 内边距减少 */
+    font-size: 0.8rem;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: white;
+    height: 28px;               /* 固定高度，让所有输入框一致 */
+    line-height: normal;
+}
+
+/* 数字输入框宽度微调 */
+input[type=number] {
+    width: 55px;                /* 更窄 */
+    text-align: center;
+}
+
+/* 按钮通用：紧凑且可点 */
 button {
     background-color: #04AA6D;
     color: white;
-    padding: 5px 1px;
-    margin: 1px;
+    padding: 6px 10px;          /* 减少内边距 */
+    margin: 3px 0;
     border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    width: 30%;
-}
-
-button:hover {
-    opacity: 0.8;
-}
-div{  
-    line-height: 1.1;
-}
-
-button:hover {
-    opacity: 0.8;
-}
-h1{
-font-size: 18px;
-  }
-h2{
-font-size: 18px;
- }
-h3{
-font-size: 18px;
- }
-h4{
-font-size: 18px
-color:red;
- }
-p{ 
-font-size: px
-  }
-label
-{ 
-font-size:13px
-  }
-input[type=number]{
-    width: 64%;
-    margin-bottom: 3px;
-    padding: 1px 1px;
-    display: inline-block;
-    border: px solid #ccc;
     border-radius: 5px;
-    box-sizing: border-box;
+    cursor: pointer;
+    width: auto;
+    min-width: 60px;
+    font-size: 0.85rem;
+    height: 32px;               /* 固定高度，统一 */
 }
-input::-webkit-input-placeholder {  
-  color: ;  
-}  
-p1
-{ 
-font-size:11px;
-color: red;
-  }
-  #capacity1 {
-    width: 64%;
-  }
+
+/* 小屏下按钮可占满，但高度保持 */
+@media (max-width: 480px) {
+    button {
+        width: 100%;
+        margin: 4px 0;
+    }
+}
+
+button:hover {
+    opacity: 0.8;
+}
+
+/* ---------- 组合输入组（默认一行显示，适用于开机/关机时间） ---------- */
+.time-input-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: nowrap;          /* 强制一行，不换行 */
+    margin-bottom: 6px;
+    width: 100%;
+}
+.time-input-group label {
+    white-space: nowrap;
+    flex: 0 0 auto;             /* 标签不伸缩，宽度由内容决定 */
+}
+.time-input-group input[type="date"] {
+    flex: 1 1 100px;            /* 可伸缩，基准100px */
+    min-width: 80px;            /* 最小宽度，防止过窄 */
+    width: auto;
+}
+.time-input-group input[type="number"] {
+    flex: 0 1 45px;             /* 可收缩，不增长，基准45px */
+    min-width: 40px;
+}
+
+/* 若屏幕极窄（小于380px），允许轻微溢出时出现横向滚动（但尽量不触发） */
+@media (max-width: 380px) {
+    .time-input-group {
+        overflow-x: auto;        /* 作为后备，实际极少出现 */
+    }
+}
+
+/* ---------- 改型时间（在.segment内）使用 Grid 实现两行显示 ---------- */
+.segment .time-input-group {
+    display: grid;
+    grid-template-columns: auto 1fr 1fr 1fr; /* 四列：label, 时, 分, 秒（日期占第二到四列的第一行） */
+    gap: 4px;
+    align-items: center;
+    flex-wrap: unset;           /* 覆盖flex设置 */
+    overflow-x: visible;        /* 确保不出现滚动 */
+}
+.segment .time-input-group label {
+    grid-row: 1 / span 2;       /* 跨两行 */
+    grid-column: 1;
+    white-space: nowrap;
+}
+.segment .time-input-group .segment-date {
+    grid-row: 1;
+    grid-column: 2 / span 3;    /* 占据第二至四列（整个第一行除label外） */
+    width: 100%;                /* 填满单元格 */
+}
+.segment .time-input-group .segment-hour {
+    grid-row: 2;
+    grid-column: 2;
+    width: 100%;
+}
+.segment .time-input-group .segment-minute {
+    grid-row: 2;
+    grid-column: 3;
+    width: 100%;
+}
+.segment .time-input-group .segment-second {
+    grid-row: 2;
+    grid-column: 4;
+    width: 100%;
+}
+
+/* 阶段容器 */
+#segments-container {
+    margin: 8px 0;
+    padding: 3px;
+    border-left: 2px solid #4ecdc4;
+}
+
+/* 单个改型段：极紧凑 */
+.segment {
+    background-color: #f9f9f9;
+    padding: 8px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+}
+.segment h4 {
+    margin: 0 0 2px 0;
+    font-size: 0.9rem;
+    width: 100%;
+}
+.segment label {
+    width: auto;
+    min-width: 50px;
+    font-size: 0.75rem;
+}
+.segment select, 
+.segment input[type=number] {
+    min-width: 90px;
+    flex: 1 1 100px;
+    height: 26px;               /* 更紧凑 */
+    padding: 2px 4px;
+}
+/* 移除按钮 */
+.remove-segment {
+    width: auto;
+    padding: 4px 8px;
+    margin: 2px 0 0 auto;
+    font-size: 0.75rem;
+    background-color: #f44336;
+    height: 26px;
+}
+#add-segment {
+    background-color: #2196F3;
+    padding: 5px 12px;
+    margin: 5px 0 10px 0;
+    height: 30px;
+    font-size: 0.8rem;
+}
+
+/* ---------- 最后一段：每个字段一行，标签和输入框在同一行 ---------- */
+#last-segment {
+    background-color: #e8f5e9;
+    padding: 8px;
+    border-radius: 4px;
+    margin: 8px 0;
+    display: grid;
+    grid-template-columns: auto 1fr;  /* 第一列标签，第二列输入框 */
+    gap: 8px 4px;                     /* 行间距8px，列间距4px */
+    align-items: center;
+}
+#last-segment label {
+    grid-column: 1;
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+#last-segment select,
+#last-segment input {
+    grid-column: 2;
+    width: 100%;
+    min-width: 0;                     /* 防止内容溢出 */
+    height: 26px;
+}
+
+/* 灌装记录摘要 */
 .summary-item {
-  color: #ff0000;  /* 整体文字红色 */
-}
-.summary-item .value {
-  font-weight: bold;  /* 仅加粗数值 */
-}
-.summary-item {
-  border: 1px solid #ff0000;  /* 红色边框 */
-  padding: 6px 10px;
-  margin: 5px 0;
-  border-radius: 4px;
-  display: inline-block;
+    color: #ff0000;
+    border: 1px solid #ff0000;
+    padding: 4px 8px;
+    margin: 4px 0;
+    border-radius: 4px;
+    display: inline-block;
+    max-width: 100%;
+    word-break: break-word;
+    font-size: 0.8rem;
 }
 #value {
-    width: 59%;
-  }
+    min-width: 100px;
+    height: 26px;
+}
+.record-item {
+    margin: 4px 0;
+    padding: 4px 3px;
+    border-bottom: 1px dashed #ccc;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    font-size: 0.75rem;
+}
+.del-btn {
+    background-color: #f44336;
+    padding: 3px 8px;
+    font-size: 0.7rem;
+    height: 24px;
+}
+
+/* 分割线 */
 hr {
-  border: 0;
-  height: 5px;                    /* 加粗线条 */
-  background: linear-gradient(90deg, #ff6b6b, #4ecdc4); /* 渐变效果 */
-  border-radius: 2px;             /* 圆角端点 */
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* 投影效果 */
-  max-width: 100%;                /* 限制最大宽度 */
-  margin: 30px auto;             /* 居中效果 */
+    margin: 12px 0;
+    height: 3px;
+    background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+    border-radius: 2px;
+    border: none;
+}
+
+/* 额外辅助：减少段落间距 */
+p, div {
+    margin: 0;
+}
+
+/* 强制某些常溢出元素换行 */
+input, select, button {
+    max-width: 100%;
+}
+
+/* 防止容器溢出 */
+.container {
+    overflow-x: hidden;
 }
