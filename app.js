@@ -318,7 +318,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             const numerator = targetEff * totalTheoretical - totalActual;
             const eta_min = 0.95;
-            const eta_max = 1.05;
+            const eta_max = 1.10;
             if (eta_min <= targetEff) {
                 comparisonText = `无法以95%以上效率追赶（目标效率过高），请手动调整`;
             } else {
@@ -378,7 +378,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // ========== 关机时间区间预测 ==========
-        const TARGET_LOW = 0.932;   // 下限93%
+        const TARGET_LOW = 0.932;   // 下限93.2%
         const TARGET_HIGH = 0.968; // 上限96.8%
 
         const predictResult = predictShutdownRange(
