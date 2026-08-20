@@ -93,11 +93,11 @@ button:hover {
     opacity: 0.8;
 }
 
-/* ---------- 组合输入组（默认一行显示，适用于开机/关机时间） ---------- */
+/* ---------- 组合输入组（开机/关机时间：日期时分秒保持一行） ---------- */
 .time-input-group {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
     flex-wrap: nowrap;          /* 强制一行，不换行 */
     margin-bottom: 6px;
     width: 100%;
@@ -105,15 +105,22 @@ button:hover {
 .time-input-group label {
     white-space: nowrap;
     flex: 0 0 auto;             /* 标签不伸缩，宽度由内容决定 */
+    font-size: 0.72rem;
 }
 .time-input-group input[type="date"] {
-    flex: 1 1 100px;            /* 可伸缩，基准100px */
-    min-width: 80px;            /* 最小宽度，防止过窄 */
+    flex: 1 1 88px;             /* v5：日历选择器，可伸缩 */
+    min-width: 72px;
     width: auto;
+    padding: 2px 4px;
+    font-size: 0.7rem;
+    height: 26px;
 }
 .time-input-group input[type="number"] {
-    flex: 0 1 45px;             /* 可收缩，不增长，基准45px */
-    min-width: 40px;
+    flex: 0 1 32px;             /* 可收缩，不增长，基准32px */
+    min-width: 26px;
+    padding: 2px 2px;
+    height: 26px;
+    font-size: 0.65rem;
 }
 
 /* 若屏幕极窄（小于380px），允许轻微溢出时出现横向滚动（但尽量不触发） */
@@ -123,39 +130,66 @@ button:hover {
     }
 }
 
-/* ---------- 改型时间（在.segment内）使用 Grid 实现两行显示 ---------- */
-.segment .time-input-group {
-    display: grid;
-    grid-template-columns: auto 1fr 1fr 1fr; /* 四列：label, 时, 分, 秒（日期占第二到四列的第一行） */
-    gap: 4px;
+/* ---------- 改型段行布局（v2：改型时间一行，额定能力+灌装数量一行，剔除时间半行） ---------- */
+.segment .seg-row {
+    display: flex;
     align-items: center;
-    flex-wrap: unset;           /* 覆盖flex设置 */
-    overflow-x: visible;        /* 确保不出现滚动 */
+    gap: 4px;
+    width: 100%;
+    margin: 3px 0;
 }
-.segment .time-input-group label {
-    grid-row: 1 / span 2;       /* 跨两行 */
-    grid-column: 1;
+.segment .seg-row label {
+    flex: 0 0 auto;
+    font-size: 0.72rem;
     white-space: nowrap;
 }
-.segment .time-input-group .segment-date {
-    grid-row: 1;
-    grid-column: 2 / span 3;    /* 占据第二至四列（整个第一行除label外） */
-    width: 100%;                /* 填满单元格 */
+.segment .seg-time-row .segment-date {
+    flex: 0 1 96px;
+    min-width: 84px;
+    width: auto;
+    height: 26px;
+    padding: 2px 4px;
+    font-size: 0.7rem;
 }
-.segment .time-input-group .segment-hour {
-    grid-row: 2;
-    grid-column: 2;
-    width: 100%;
+.segment .seg-time-row input[type=number] {
+    flex: 0 1 32px;
+    min-width: 26px;
+    width: auto;
 }
-.segment .time-input-group .segment-minute {
-    grid-row: 2;
-    grid-column: 3;
-    width: 100%;
+.segment .seg-row input[type=number] {
+    flex: 1 1 70px;
+    min-width: 60px;
+    width: auto;
 }
-.segment .time-input-group .segment-second {
-    grid-row: 2;
-    grid-column: 4;
-    width: 100%;
+.segment .seg-row .segment-exclude {
+    flex: 0 1 110px;
+}
+.segment .seg-row select {
+    flex: 1 1 70px;
+    min-width: 60px;
+    width: auto;
+    height: 26px;
+    padding: 2px 4px;
+}
+.segment .seg-row .segment-capacity-custom {
+    flex: 1 1 72px;
+    min-width: 64px;
+}
+.segment .seg-row .custom-back {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 0;
+    height: 26px;
+    padding: 2px 6px;
+    font-size: 0.62rem;
+    background-color: #8e8e93;
+    margin: 0;
+}
+.segment .seg-half {
+    width: 50%;                 /* 剔除时间占半行 */
+}
+.segment .remove-segment {
+    margin-left: auto;
 }
 
 /* 阶段容器 */
@@ -165,16 +199,12 @@ button:hover {
     border-left: 2px solid #4ecdc4;
 }
 
-/* 单个改型段：极紧凑 */
+/* 单个改型段：极紧凑（v2：块状布局，内部 .seg-row 分行显示） */
 .segment {
     background-color: #f9f9f9;
     padding: 8px;
     margin-bottom: 8px;
     border-radius: 4px;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 4px;
 }
 .segment h4 {
     margin: 0 0 2px 0;
@@ -210,28 +240,51 @@ button:hover {
     font-size: 0.8rem;
 }
 
-/* ---------- 最后一段：每个字段一行，标签和输入框在同一行 ---------- */
+/* ---------- 最后一段（v3：每个字段各占一行） ---------- */
 #last-segment {
     background-color: #e8f5e9;
     padding: 8px;
     border-radius: 4px;
     margin: 8px 0;
     display: grid;
-    grid-template-columns: auto 1fr;  /* 第一列标签，第二列输入框 */
-    gap: 8px 4px;                     /* 行间距8px，列间距4px */
+    grid-template-columns: auto 1fr;  /* 一列标签、一列输入，每行一个字段 */
+    gap: 8px 6px;
     align-items: center;
 }
 #last-segment label {
-    grid-column: 1;
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     white-space: nowrap;
 }
 #last-segment select,
 #last-segment input {
-    grid-column: 2;
     width: 100%;
     min-width: 0;                     /* 防止内容溢出 */
     height: 26px;
+}
+/* v4：最后段额定能力容器（下拉/自行输入/返回按钮同行，避免按钮换行错位） */
+.cap-wrap {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    min-width: 0;
+}
+.cap-wrap select,
+.cap-wrap input[type=number] {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: 100%;
+    height: 26px;
+}
+.cap-wrap button.custom-back {
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 0;
+    height: 26px;
+    padding: 2px 10px;
+    font-size: 0.7rem;
+    background-color: #8e8e93;
+    margin: 0;
 }
 
 /* 灌装记录摘要 */
@@ -290,4 +343,209 @@ input, select, button {
 /* 防止容器溢出 */
 .container {
     overflow-x: hidden;
+}
+
+/* ---------- v1 升级新增样式 ---------- */
+
+/* 顶部标题栏 */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, #007aff, #00b4d8);
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+}
+.app-header .header-date {
+    font-size: 0.75rem;
+    font-weight: 400;
+    opacity: 0.92;
+}
+
+/* 参数设置框 */
+.config-box {
+    background: #fffbe6;
+    border: 1px solid #ffe58f;
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin: 8px 0 12px 0;
+    font-size: 0.8rem;
+}
+.config-box strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #ad6800;
+}
+.config-box .cfg-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin: 4px 0;
+}
+.config-box label {
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+.config-box input[type=number] {
+    width: 70px;
+}
+
+/* 一键填充当前时间按钮 */
+.fill-now-btn {
+    flex: 0 0 auto;
+    background-color: #34c759;
+    padding: 2px 4px;
+    font-size: 0.6rem;
+    height: 26px;
+    min-width: 34px;
+    width: auto;
+}
+
+/* 灌装记录工具栏 */
+.records-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 8px 0;
+}
+.records-toolbar .tool-btn {
+    background-color: #5856d6;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    height: 30px;
+    min-width: 0;
+    width: auto;
+    margin: 0;
+}
+.records-toolbar .tool-btn.danger {
+    background-color: #ff3b30;
+}
+#record-count {
+    font-size: 0.75rem;
+    color: #666;
+    margin-right: auto;
+}
+
+/* 计算结果卡片 */
+.result-card {
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    background: #f0f8ff;
+    border: 1px solid #cfe6ff;
+    font-size: 0.85rem;
+    line-height: 1.6;
+}
+
+/* ---------- v3 新增样式 ---------- */
+
+/* 参数设置按钮 */
+.config-open-btn {
+    display: block;
+    width: 100%;
+    background: linear-gradient(135deg, #ff9500, #ff6b00);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 8px 0 12px 0;
+    height: 36px;
+}
+
+/* 参数设置弹层 */
+.config-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+.config-card {
+    background: white;
+    border-radius: 14px;
+    padding: 16px;
+    width: 100%;
+    max-width: 340px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+.config-card h4 {
+    margin: 0 0 12px 0;
+    font-size: 0.95rem;
+    color: #333;
+}
+.config-card .cfg-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 9px 0;
+}
+.config-card .cfg-row label {
+    font-size: 0.8rem;
+    white-space: nowrap;
+    color: #333;
+}
+.config-card .cfg-row input[type=number] {
+    width: 90px;
+    height: 30px;
+}
+.cfg-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+}
+.cfg-actions button {
+    flex: 1;
+    height: 36px;
+    font-size: 0.85rem;
+    margin: 0;
+}
+.cfg-actions #cfg-save {
+    background-color: #34c759;
+}
+.cfg-actions #cfg-cancel {
+    background-color: #8e8e93;
+}
+/* ---------- v7 新增样式：双页签 + 监控页 ---------- */
+.view-tabs {
+    display: flex;
+    gap: 8px;
+    margin: 4px 0 8px 0;
+}
+.view-tab {
+    flex: 1;
+    height: 36px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: #e9e9eb;
+    color: #555;
+    margin: 0;
+    padding: 6px 4px;
+}
+.view-tab.active {
+    background: #007aff;
+    color: white;
+}
+#page-monitor {
+    height: 100%;
+}
+.monitor-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+    background: white;
 }
