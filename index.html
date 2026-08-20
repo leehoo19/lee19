@@ -55,9 +55,11 @@
             font-size: 24px;
             margin-bottom: 2px;
         }
+        /* 简单图标用字符代替 */
         .nav-item .icon-calc::before { content: "📊"; font-size: 22px; }
         .nav-item .icon-monitor::before { content: "📡"; font-size: 22px; }
 
+        /* 监控页面iframe样式 */
         .monitor-frame {
             width: 100%;
             height: 100%;
@@ -68,10 +70,7 @@
         .page-hidden {
             display: none;
         }
-        /* 原有容器内边距微调，适配移动端 */
-        .time-input-group {
-            flex-wrap: wrap;
-        }
+        /* 原有容器内边距微调，适配移动端（时间输入保持一行，见 styles.css） */
         .segment {
             background: #f9f9f9;
             padding: 10px;
@@ -112,46 +111,67 @@
 </head>
 <body>
 <div class="app-container">
+    <!-- 顶部标题栏 -->
+    <div class="app-header">
+        <span>📊 线效率工具</span>
+        <span class="header-date" id="header-date"></span>
+    </div>
     <!-- 内容区域，动态显示当前页面 -->
     <div class="content" id="content-area">
+        <!-- 页签（v7：计算 / 监控 两个按钮同一行） -->
+        <div class="view-tabs">
+            <button type="button" class="view-tab active" id="tab-calc" onclick="switchView('calc')">实时线效计算</button>
+            <button type="button" class="view-tab" id="tab-monitor" onclick="switchView('monitor')">实时线效监控</button>
+        </div>
         <!-- 页面1：实时效率测算（默认显示） -->
         <div id="page-calc">
             <hr>
-            <h2>实时线效计算</h2>
             <p style="font-size: 14px; color: #555;">每轮可单独设置剔除时间，若涉及前后工序均有剔除补偿时间则填总时间（分钟）。</p>
+
+            <!-- 参数设置（v3：按钮触发弹层卡片） -->
+            <button type="button" id="open-config-btn" class="config-open-btn">⚙️ 参数设置</button>
+
             <form id="device-efficiency-calculator">
-                <!-- 开机时间：组合输入 -->
+                <!-- 开机时间：组合输入（v5：日期日历选择 + 时分秒 一行） -->
                 <div class="time-input-group">
-                    <label>酒机开机时间:</label>
+                    <label>开机时间:</label>
                     <input type="date" id="start-date" required>
-                    <input type="number" id="start-hour" min="0" max="23" value=" " placeholder="时" required>
-                    <input type="number" id="start-minute" min="0" max="59" value=" " placeholder="分" required>
+                    <input type="number" id="start-hour" min="0" max="23" placeholder="时" required>
+                    <input type="number" id="start-minute" min="0" max="59" placeholder="分" required>
                     <input type="number" id="start-second" min="0" max="59" value="0" placeholder="秒" required>
+                    <button type="button" class="fill-now-btn" id="fill-start-now" onclick="fillNow('start')">现在</button>
                 </div>
 
                 <!-- 动态改型段容器 -->
                 <div id="segments-container"></div>
                 <button type="button" id="add-segment">+ 添加改型轮次</button>
 
-                <!-- 关机时间：组合输入 -->
+                <!-- 关机时间：组合输入（v5：日期日历选择 + 时分秒 一行） -->
                 <div class="time-input-group">
-                    <label>酒机关机时间:</label>
+                    <label>关机时间:</label>
                     <input type="date" id="end-date" required>
-                    <input type="number" id="end-hour" min="0" max="23" value=" " placeholder="时" required>
-                    <input type="number" id="end-minute" min="0" max="59" value=" " placeholder="分" required>
+                    <input type="number" id="end-hour" min="0" max="23" placeholder="时" required>
+                    <input type="number" id="end-minute" min="0" max="59" placeholder="分" required>
                     <input type="number" id="end-second" min="0" max="59" value="0" placeholder="秒" required>
+                    <button type="button" class="fill-now-btn" id="fill-end-now" onclick="fillNow('end')">现在</button>
                 </div>
 
-                <!-- 最后一段参数 -->
+                <!-- 最后一段参数（v4：每个字段各占一行；额定能力容器同行，避免切换按钮换行错位） -->
                 <div id="last-segment">
                     <label>最后一轮额定能力:</label>
-                    <select id="last-capacity" required>
-                        <option value="24000">24000</option>
-                        <option value="36000">36000</option>
-                        <option value="72000">72000</option>
-                        <option value="60000">60000</option>
-                        <option value="90000">90000</option>
-                    </select>
+                    <div class="cap-wrap">
+                        <select id="last-capacity">
+                            <option value="24000">24000</option>
+                            <option value="36000">36000</option>
+                            <option value="72000">72000</option>
+                            <option value="60000">60000</option>
+                            <option value="90000">90000</option>
+                            <option value="30000">30000</option>
+                            <option value="__custom__">自行输入…</option>
+                        </select>
+                        <input type="number" id="last-capacity-custom" min="10000" max="150000" placeholder="输入额定能力" style="display:none">
+                        <button type="button" id="last-custom-back" class="custom-back" style="display:none">◀ 预设</button>
+                    </div>
                     <label>最后段灌装数量:</label>
                     <input type="number" id="last-output" placeholder="灌装数量" required>
                     <label>最后段剔除时间(分钟):</label>
@@ -180,64 +200,38 @@
                 <input type="number" id="value" required placeholder="输入灌装数">
                 <button onclick="addRecord()">添加记录</button>
             </form>
+            <!-- 记录工具栏（v1 新增：复制/清空） -->
+            <div class="records-toolbar">
+                <span id="record-count"></span>
+                <button type="button" class="tool-btn" onclick="copyRecords()">📋 复制记录</button>
+                <button type="button" class="tool-btn danger" onclick="clearRecords()">🗑 清空记录</button>
+            </div>
             <div class="summary-container" id="summaries"></div>
             <div id="records"></div>
             <hr>
         </div>
-
-        <!-- 页面2：实时效率监控 -->
-        <div id="page-monitor" style="height: 100%; display: none;">
+        <!-- 监控页（全屏嵌入 www.leehoo.top，与仓库原版一致） -->
+        <div id="page-monitor" style="display:none;">
             <iframe class="monitor-frame" src="https://www.leehoo.top" title="包装效率监控"></iframe>
         </div>
     </div>
-
-    <!-- 底部导航栏 -->
-    <div class="bottom-nav">
-        <div class="nav-item active" id="nav-calc">
-            <span class="icon-calc"></span>
-            <span>实时效率测算</span>
-        </div>
-        <div class="nav-item" id="nav-monitor">
-            <span class="icon-monitor"></span>
-            <span>实时效率监控</span>
+</div>
+<!-- 参数设置弹层（v3：确认保存后写入本地，长期生效） -->
+<div id="config-modal" class="config-modal" style="display:none">
+    <div class="config-card">
+        <h4>⚙️ 参数设置</h4>
+        <div class="cfg-row"><label>基准效率 %</label><input type="number" id="cfg-benchmark" value="93" min="1" max="100" step="0.1"></div>
+        <div class="cfg-row"><label>上限效率 %</label><input type="number" id="cfg-upper" value="97" min="1" max="100" step="0.1"></div>
+        <div class="cfg-row"><label>预测下限 %</label><input type="number" id="cfg-pred-low" value="93.2" min="1" max="100" step="0.1"></div>
+        <div class="cfg-row"><label>预测上限 %</label><input type="number" id="cfg-pred-high" value="96.8" min="1" max="100" step="0.1"></div>
+        <div class="cfg-row"><label>追赶最低效率 %</label><input type="number" id="cfg-catch-low" value="95" min="1" max="100" step="0.1"></div>
+        <div class="cfg-row"><label>追赶最高效率 %</label><input type="number" id="cfg-catch-high" value="105" min="50" max="120" step="0.1"></div>
+        <div class="cfg-actions">
+            <button type="button" id="cfg-save">确认保存</button>
+            <button type="button" id="cfg-cancel">取消</button>
         </div>
     </div>
 </div>
-
 <script src="app.js"></script>
-<script>
-    // 底部导航切换逻辑
-    (function() {
-        const navCalc = document.getElementById('nav-calc');
-        const navMonitor = document.getElementById('nav-monitor');
-        const pageCalc = document.getElementById('page-calc');
-        const pageMonitor = document.getElementById('page-monitor');
-
-        function setActivePage(page) {
-            // 更新导航激活状态
-            navCalc.classList.toggle('active', page === 'calc');
-            navMonitor.classList.toggle('active', page === 'monitor');
-
-            // 显示对应页面
-            if (page === 'calc') {
-                pageCalc.style.display = 'block';
-                pageMonitor.style.display = 'none';
-            } else {
-                pageCalc.style.display = 'none';
-                pageMonitor.style.display = 'block';
-            }
-        }
-
-        navCalc.addEventListener('click', function() {
-            setActivePage('calc');
-        });
-
-        navMonitor.addEventListener('click', function() {
-            setActivePage('monitor');
-        });
-
-        // 默认显示测算页（已在HTML中设置）
-    })();
-</script>
 </body>
 </html>
